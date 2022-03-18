@@ -10,7 +10,7 @@ const Board: FC<Props> = () => {
     board: { tiles },
   } = useGame();
 
-  const distSize = 72;
+  const distSize = 64;
 
   return (
     <View style={[styles.board, { width: 4 * distSize, height: 4 * distSize }]}>
@@ -20,8 +20,8 @@ const Board: FC<Props> = () => {
           value={value}
           style={{
             position: "absolute",
-            top: position[0] * distSize,
-            left: position[1] * distSize,
+            top: position[1] * distSize,
+            left: position[0] * distSize,
           }}
         />
       ))}
