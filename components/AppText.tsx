@@ -1,8 +1,26 @@
 import { FC } from "react";
-import { Text } from "react-native";
+import { Text, TextProps } from "react-native";
 
-const AppText: FC = ({ children }) => {
-  return <Text>{children}</Text>;
+interface Props extends TextProps {
+  fontWeight?: "regular" | "bold";
+}
+
+const AppText: FC<Props> = ({
+  children,
+  fontWeight = "regular",
+  style,
+  ...props
+}) => {
+  const fontFamily =
+    fontWeight === "regular"
+      ? "Oswald_400Regular"
+      : (fontWeight === "bold" && "Oswald_700Bold") || "";
+
+  return (
+    <Text style={[style, { fontFamily }]} {...props}>
+      {children}
+    </Text>
+  );
 };
 
 export default AppText;

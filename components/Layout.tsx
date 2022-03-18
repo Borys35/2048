@@ -1,8 +1,12 @@
 import { FC } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 const Layout: FC = ({ children }) => {
-  return <View>{children}</View>;
+  return <View style={styles.layout}>{children}</View>;
 };
+
+const styles = StyleSheet.create({
+  layout: { flex: 1 },
+});
 
 export default Layout;

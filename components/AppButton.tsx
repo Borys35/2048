@@ -1,21 +1,31 @@
 import { FC } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, PressableProps, StyleSheet } from "react-native";
 import AppText from "./AppText";
 
-interface Props {
+interface Props extends PressableProps {
   title: string;
 }
 
-const AppButton: FC<Props> = ({ title }) => {
+const AppButton: FC<Props> = ({ title, style, ...props }) => {
   return (
-    <Pressable style={styles.button}>
-      <AppText>{title}</AppText>
+    <Pressable style={[styles.button, style as any]} {...props}>
+      <AppText fontWeight="regular" style={styles.text}>
+        {title}
+      </AppText>
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {},
+  button: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: "#fff",
+    alignItems: "center",
+  },
+  text: {
+    fontSize: 20,
+  },
 });
 
 export default AppButton;
