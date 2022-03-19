@@ -10,7 +10,7 @@ const BoardLogic: FC = ({ children }) => {
 
   return (
     <View
-      style={{ backgroundColor: "red" }}
+      style={{ backgroundColor: "white" }}
       onStartShouldSetResponder={(e) => true}
       onMoveShouldSetResponder={(e) => true}
       onResponderStart={(e) => {

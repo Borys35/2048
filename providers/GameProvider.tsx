@@ -1,5 +1,5 @@
-import { createContext, FC, useContext, useEffect, useState } from "react";
-import { BoardProps, TileProps, ValueType } from "../typings";
+import { createContext, FC, useContext, useState } from "react";
+import { BoardProps, TileProps } from "../typings";
 
 interface ContextProps {
   board: BoardProps;
@@ -14,43 +14,79 @@ const GameContext = createContext({} as ContextProps);
 
 export const useGame = () => useContext(GameContext);
 
-function initBoard(): BoardProps {
-  function generatePlayableTiles() {
-    const tileIndexes: number[] = [];
-    for (let i = 0; i < 2; i++) {
-      const index = Math.floor(Math.random() * 16);
-      while (!tileIndexes.includes(index)) {
-        tileIndexes.push(index);
-      }
-    }
-    return tileIndexes;
-  }
+// function initBoard(): BoardProps {
+//   function generatePlayableTiles() {
+//     const tileIndexes: number[] = [];
+//     for (let i = 0; i < 2; i++) {
+//       const index = Math.floor(Math.random() * 16);
+//       while (!tileIndexes.includes(index)) {
+//         tileIndexes.push(index);
+//       }
+//     }
+//     return tileIndexes;
+//   }
 
-  const tiles: TileProps[] = [];
-  const playableTiles = generatePlayableTiles();
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x < 4; x++) {
-      const i = y * 4 + x;
+//   const tiles: TileProps[] = [];
+//   const playableTiles = generatePlayableTiles();
+//   for (let y = 0; y < 4; y++) {
+//     for (let x = 0; x < 4; x++) {
+//       const i = y * 4 + x;
 
-      let value: ValueType = 0;
-      if (playableTiles.includes(i)) value = 2;
-      else continue;
+//       let value: ValueType = 0;
+//       if (playableTiles.includes(i)) value = 2;
+//       else continue;
 
-      // tiles[i] = { position: [x, y], value };
-      tiles.push({ position: [x, y], value });
-    }
-  }
+//       // tiles[i] = { position: [x, y], value };
+//       tiles.push({ position: [x, y], value });
+//     }
+//   }
 
-  return { tiles };
-}
+//   return { tiles };
+// }
 
 const GameProvider: FC = ({ children }) => {
-  const [board, setBoard] = useState<BoardProps>(initBoard());
+  const [board, setBoard] = useState<BoardProps>({ tiles: [] });
 
-  function resetBoard() {
-    setBoard(initBoard());
+  // function resetBoard() {
+  //   setBoard(initBoard());
+  // }
+
+  function addTile(b: BoardProps, count: number = 1) {
+    const newBoard = { ...b };
+    const { tiles } = newBoard;
+
+    const emptyPositions: [number, number][] = [];
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < 4; x++) {
+        if (
+          tiles.find((tile) => tile.position[0] === x && tile.position[1] === y)
+        )
+          continue;
+        emptyPositions.push([x, y]);
+      }
+    }
+
+    // random empty position
+    for (let i = 0; i < count; i++) {
+      const index = Math.floor(Math.random() * emptyPositions.length);
+      const position = emptyPositions[index];
+
+      emptyPositions.splice(index, 1);
+
+      tiles.push({
+        value: 2,
+        position,
+      });
+    }
+
+    setBoard(newBoard);
   }
 
+  function resetBoard() {
+    addTile({ tiles: [] }, 2);
+  }
+
+  //#region movement
   function move(
     fn: (tiles: TileProps[], tile: TileProps, x: number, y: number) => void
   ) {
@@ -64,6 +100,7 @@ const GameProvider: FC = ({ children }) => {
       fn(tiles, tile, x, y);
     });
 
+    addTile(board);
     setBoard(newBoard);
   }
 
@@ -118,10 +155,11 @@ const GameProvider: FC = ({ children }) => {
         break;
       }
     });
+  //#endregion
 
-  useEffect(() => {
-    resetBoard();
-  }, []);
+  // useEffect(() => {
+  //   initBoard();
+  // }, []);
 
   return (
     <GameContext.Provider
