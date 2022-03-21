@@ -6,11 +6,10 @@ const BoardLogic: FC = ({ children }) => {
   const [prevLocation, setPrevLocation] = useState<[number, number]>();
   const [moved, setMoved] = useState(false);
   const { moveRight, moveLeft, moveDown, moveUp } = useGame();
-  const threshold = 2;
+  const threshold = 0;
 
   return (
     <View
-      style={{ backgroundColor: "white" }}
       onStartShouldSetResponder={(e) => true}
       onMoveShouldSetResponder={(e) => true}
       onResponderStart={(e) => {

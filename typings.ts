@@ -13,6 +13,7 @@ export type ValueType =
   | 2048;
 
 export interface TileProps {
+  id: number;
   position: [number, number];
   value: ValueType;
 }
