@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef } from "react";
 import { Animated, StyleSheet, ViewProps } from "react-native";
+import { moveDuration } from "../../providers/GameProvider";
 import { ValueType } from "../../typings";
 import AppText from "../AppText";
 
@@ -23,7 +24,7 @@ const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
   useEffect(() => {
     Animated.timing(posAnim, {
       toValue: { x: left, y: top },
-      duration: 1000,
+      duration: moveDuration,
       useNativeDriver: false,
     }).start();
   }, [top, left]);

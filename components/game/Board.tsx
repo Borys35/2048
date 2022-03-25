@@ -34,17 +34,12 @@ const Board: FC<Props> = () => {
   return (
     <View style={[styles.board, { width: 4 * distSize, height: 4 * distSize }]}>
       {generateEmptyTiles()}
-      {tiles.map(({ position, value }, i) => (
+      {tiles.map(({ position, value, id }) => (
         <Tile
-          key={i}
+          key={id}
           value={value}
           top={position[1] * distSize}
           left={position[0] * distSize}
-          // style={{
-          //   position: "absolute",
-          //   top: position[1] * distSize,
-          //   left: position[0] * distSize,
-          // }}
         />
       ))}
     </View>

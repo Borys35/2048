@@ -13,13 +13,13 @@ const BoardLogic: FC = ({ children }) => {
       onStartShouldSetResponder={(e) => true}
       onMoveShouldSetResponder={(e) => true}
       onResponderStart={(e) => {
-        const { locationX, locationY } = e.nativeEvent;
+        const { locationX, locationY } = e.nativeEvent.touches[0];
         setPrevLocation([locationX, locationY]);
       }}
       onResponderMove={(e) => {
         if (moved || !prevLocation) return;
 
-        const { locationX, locationY } = e.nativeEvent;
+        const { locationX, locationY } = e.nativeEvent.touches[0];
         const xDiff = locationX - prevLocation[0];
         const yDiff = locationY - prevLocation[1];
 
@@ -27,22 +27,18 @@ const BoardLogic: FC = ({ children }) => {
           if (Math.abs(xDiff) < threshold) return;
           if (xDiff > 0) {
             // right
-            console.log("right");
             moveRight();
           } else {
             // left
-            console.log("left");
             moveLeft();
           }
         } else {
           if (Math.abs(yDiff) < threshold) return;
           if (yDiff > 0) {
             // down
-            console.log("down");
             moveDown();
           } else {
             // up
-            console.log("up");
             moveUp();
           }
         }
