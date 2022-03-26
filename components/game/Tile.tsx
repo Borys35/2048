@@ -14,6 +14,15 @@ const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
   const posAnim = useRef(new Animated.ValueXY({ x: left, y: top })).current;
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
+  function divindingTimes(val: number) {
+    let times = 0;
+    while (val > 2) {
+      val /= 2;
+      times++;
+    }
+    return times;
+  }
+
   useEffect(() => {
     Animated.spring(scaleAnim, {
       toValue: 1,
@@ -35,7 +44,7 @@ const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
         styles.tile,
         style,
         {
-          backgroundColor: `hsl(20, 100%, ${100 - value}%)`,
+          backgroundColor: `hsl(20, 100%, ${100 - divindingTimes(value) * 4}%)`,
           borderWidth: value > 0 ? 2 : 0,
           position: "absolute",
           top: posAnim.y,
@@ -48,7 +57,10 @@ const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
       {value > 0 && (
         <AppText
           fontWeight="bold"
-          style={[styles.text, { color: value >= 64 ? "#fff" : "#000" }]}
+          style={[
+            styles.text,
+            { color: divindingTimes(value) >= 8 ? "#fff" : "#000" },
+          ]}
         >
           {value}
         </AppText>
