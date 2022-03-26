@@ -14,6 +14,8 @@ interface ContextProps {
   gameOver: boolean;
   score: number;
   bestScore: number;
+  hue: number;
+  setHue: (arg: number) => void;
   getNextId: () => number;
   resetBoard: () => void;
   moveRight: () => void;
@@ -33,6 +35,7 @@ const GameProvider: FC = ({ children }) => {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
+  const [hue, setHue] = useState(20);
   const nextIdRef = useRef<number>(0);
 
   function getNextId() {
@@ -409,6 +412,8 @@ const GameProvider: FC = ({ children }) => {
         gameOver,
         score,
         bestScore,
+        hue,
+        setHue,
         getNextId,
         resetBoard,
         moveRight,

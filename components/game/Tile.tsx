@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef } from "react";
 import { Animated, StyleSheet, ViewProps } from "react-native";
-import { moveDuration } from "../../providers/GameProvider";
+import { moveDuration, useGame } from "../../providers/GameProvider";
 import { ValueType } from "../../typings";
 import AppText from "../AppText";
 
@@ -11,6 +11,7 @@ interface Props extends ViewProps {
 }
 
 const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
+  const { hue } = useGame();
   const posAnim = useRef(new Animated.ValueXY({ x: left, y: top })).current;
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
@@ -45,7 +46,9 @@ const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
         styles.tile,
         style,
         {
-          backgroundColor: `hsl(20, 100%, ${100 - divindingTimes(value) * 4}%)`,
+          backgroundColor: `hsl(${hue}, 100%, ${
+            100 - divindingTimes(value) * 4
+          }%)`,
           borderWidth: value > 0 ? 2 : 0,
           position: "absolute",
           top: posAnim.y,

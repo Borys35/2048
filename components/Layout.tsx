@@ -12,7 +12,7 @@ const Layout: FC = ({ children }) => {
 };
 
 const styles = StyleSheet.create({
-  layout: { flex: 1 },
+  layout: { flex: 1, paddingHorizontal: 32 },
 });
 
 export default Layout;
