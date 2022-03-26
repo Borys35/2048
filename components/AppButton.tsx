@@ -22,6 +22,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: "#fff",
     alignItems: "center",
+    elevation: 4,
   },
   text: {
     fontSize: 20,

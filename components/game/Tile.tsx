@@ -35,7 +35,7 @@ const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
         styles.tile,
         style,
         {
-          backgroundColor: `hsl(20, 100%, ${100 - Math.cbrt(value) * 4}%)`,
+          backgroundColor: `hsl(20, 100%, ${100 - value}%)`,
           borderWidth: value > 0 ? 2 : 0,
           position: "absolute",
           top: posAnim.y,
@@ -46,7 +46,10 @@ const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
       {...props}
     >
       {value > 0 && (
-        <AppText fontWeight="bold" style={styles.text}>
+        <AppText
+          fontWeight="bold"
+          style={[styles.text, { color: value >= 64 ? "#fff" : "#000" }]}
+        >
           {value}
         </AppText>
       )}

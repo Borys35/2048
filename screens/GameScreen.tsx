@@ -3,6 +3,7 @@ import { FC, useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import Board from "../components/game/Board";
 import BoardLogic from "../components/game/BoardLogic";
+import GameOver from "../components/GameOver";
 import Layout from "../components/Layout";
 import { useGame } from "../providers/GameProvider";
 
@@ -13,7 +14,7 @@ interface Props {
 
 const GameScreen: FC<Props> = ({ route, navigation }) => {
   const isFocused = useIsFocused();
-  const { resetBoard } = useGame();
+  const { resetBoard, gameOver } = useGame();
 
   useEffect(() => {
     if (route.params && route.params.newGame) resetBoard();
@@ -26,6 +27,8 @@ const GameScreen: FC<Props> = ({ route, navigation }) => {
           <Board />
         </BoardLogic>
       </View>
+
+      {gameOver && <GameOver navigation={navigation} />}
     </Layout>
   );
 };

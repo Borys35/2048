@@ -3,6 +3,7 @@ import { BoardProps, TileProps, ValueType } from "../typings";
 
 interface ContextProps {
   board: BoardProps;
+  gameOver: boolean;
   getNextId: () => number;
   resetBoard: () => void;
   moveRight: () => void;
@@ -19,6 +20,7 @@ export const useGame = () => useContext(GameContext);
 
 const GameProvider: FC = ({ children }) => {
   const [board, setBoard] = useState<BoardProps>({ tiles: [] });
+  const [gameOver, setGameOver] = useState(false);
   const nextIdRef = useRef<number>(0);
 
   function getNextId() {
@@ -54,83 +56,88 @@ const GameProvider: FC = ({ children }) => {
       });
     }
 
-    // setBoard(newBoard);
-
     return newTiles;
   }
 
   function resetBoard() {
+    setGameOver(false);
     const tiles = addTile([], 2);
     setBoard({ tiles });
   }
 
   //#region movement
 
-  // const move = (
-  //   fn: (
-  //     tiles: TileProps[],
-  //     moved: boolean,
-  //     setMoved: (moved: boolean) => void
-  //   ) => void
-  // ) => {
-  //   const newBoard = { ...board };
-  //   const { tiles } = newBoard;
+  function moveInDirection(
+    inColumns: boolean,
+    downOrRight: boolean,
+    tiles: TileProps[],
+    tile: TileProps
+  ) {
+    const newTiles = [...tiles];
 
-  //   let moved = false;
-  //   fn(tiles, moved, (m) => (moved = m));
+    const offset = downOrRight ? -1 : 1;
+    const endPos = downOrRight ? 3 : 0;
+    const posIndex = inColumns ? 1 : 0;
 
-  //   if (!moved) return;
+    // Move to the bottom
+    // Find tiles in the same column
+    let filteredTiles = [];
+    // const filteredTiles = newTiles.filter(
+    //   (t) => t.position[0] === tile.position[0]
+    // );
+    if (inColumns) {
+      filteredTiles = newTiles.filter(
+        (t) => t.position[0] === tile.position[0]
+      );
+    } else {
+      filteredTiles = newTiles.filter(
+        (t) => t.position[1] === tile.position[1]
+      );
+    }
+    let lastFoundTiles;
+    if (downOrRight)
+      for (let c = 3; c > tile.position[posIndex]; c--) {
+        // const foundTile = filteredTiles.find((t) => t.position[posIndex] === c);
+        const foundTiles = filteredTiles.filter(
+          (t) => t.position[posIndex] === c
+        );
+        if (foundTiles.length) lastFoundTiles = foundTiles;
+      }
+    else
+      for (let c = 0; c < tile.position[posIndex]; c++) {
+        const foundTiles = filteredTiles.filter(
+          (t) => t.position[posIndex] === c
+        );
+        if (foundTiles.length) lastFoundTiles = foundTiles;
+      }
+    const i = newTiles.findIndex((t) => t.id === tile.id);
+    if (lastFoundTiles) {
+      // Only one found tile
+      const lastFoundTile = lastFoundTiles[0];
+      if (lastFoundTiles.length < 2 && lastFoundTile.value === tile.value) {
+        // Need to merge two tiles down
+        if (newTiles[i].position[posIndex] === lastFoundTile.position[posIndex])
+          return false;
+        newTiles[i].position = lastFoundTile.position;
+      } else {
+        // Move before last found tile
+        if (
+          newTiles[i].position[posIndex] ===
+          lastFoundTile.position[posIndex] + offset
+        )
+          return false;
+        newTiles[i].position[posIndex] =
+          lastFoundTile.position[posIndex] + offset;
+      }
+    } else {
+      // No tiles on the way
+      // Move til the border
+      if (newTiles[i].position[posIndex] === endPos) return false;
+      newTiles[i].position[posIndex] = endPos;
+    }
 
-  //   addTile(board);
-  //   setBoard(newBoard);
-  // };
-
-  // const moveUp = () =>
-  //   move((tiles, moved, setMoved) => {
-  //     for (let x = 0; x < 4; x++) {
-  //       const filteredTiles = tiles
-  //         .filter((tile) => tile.position[0] === x)
-  //         .sort((a, b) => a.position[1] - b.position[1]);
-
-  //       filteredTiles.forEach((tile) => {
-  //         if (moved) return;
-  //         if (tile.position[1] <= 0) return;
-
-  //         // find if there is other tile on up
-  //         moved = !filteredTiles.find(
-  //           (t) => tile.position[1] - 1 === t.position[1]
-  //         );
-  //         setMoved(moved);
-  //       });
-
-  //       filteredTiles.map((tile) => {
-  //         for (let y = 0; y <= tile.position[1]; y++) {
-  //           const isTileThere = filteredTiles.find((t) => t.position[1] === y);
-
-  //           if (isTileThere) continue;
-
-  //           tile.position[1] = y;
-  //         }
-  //       });
-  //     }
-  //   });
-
-  // function mergeTiles(tiles: TileProps[], tile1: TileProps, tile2: TileProps) {
-  //   const i1 = tiles.findIndex((t) => t.id === tile1.id);
-  //   const i2 = tiles.findIndex((t) => t.id === tile2.id);
-
-  //   tiles.splice(i1, 1);
-
-  //   tiles.splice(i2, 1);
-
-  //   tiles.push({
-  //     ...tile2,
-  //     id: getNextId(),
-  //     value: (tile2.value * 2) as ValueType,
-  //   });
-
-  //   return tiles;
-  // }
+    return true;
+  }
 
   // Moves only one tile in one direction
   function move(
@@ -139,82 +146,33 @@ const GameProvider: FC = ({ children }) => {
     direction: [number, number]
   ): TileProps[] | false {
     const newTiles = [...tiles];
+    const m = (inColumns: boolean, downOrRight: boolean) =>
+      moveInDirection(inColumns, downOrRight, newTiles, tile);
+
     if (direction[1] !== 0) {
       // Move in Y axis
       const dir = direction[1];
       if (dir < 0) {
         // Move to the bottom
-        // Find tiles in the same column
-        const filteredTiles = newTiles.filter(
-          (t) => t.position[0] === tile.position[0]
-        );
-        let lastFoundTile;
-        for (let y = 3; y > tile.position[1]; y--) {
-          const foundTile = filteredTiles.find((t) => t.position[1] === y);
-          if (foundTile) lastFoundTile = foundTile;
-        }
-        const i = newTiles.findIndex((t) => t.id === tile.id);
-        if (lastFoundTile) {
-          // Tiles on the way
-          if (lastFoundTile.value === tile.value) {
-            // Need to merge two tiles down
-            if (newTiles[i].position[1] === lastFoundTile.position[1])
-              return false;
-            newTiles[i].position = lastFoundTile.position;
-          } else {
-            // Move before last found tile
-            if (newTiles[i].position[1] === lastFoundTile.position[1] - 1)
-              return false;
-            newTiles[i].position[1] = lastFoundTile.position[1] - 1;
-          }
-        } else {
-          // No tiles on the way
-          // Move til the border
-          const i = newTiles.findIndex((t) => t.id === tile.id);
-          if (newTiles[i].position[1] === 3) return false;
-          newTiles[i].position[1] = 3;
-        }
+        if (!m(true, true)) return false;
       } else {
         // Move to the top
-        // TODO: check
+        if (!m(true, false)) return false;
       }
     } else {
       // Move in X axis
       const dir = direction[0];
       if (dir > 0) {
         // Move to the right
-        // TODO: check
+        if (!m(false, true)) return false;
       } else {
         // Move to the left
-        // TODO: check
+        if (!m(false, false)) return false;
       }
     }
-    // tile.position = position;
 
-    // const newBoard = { ...board, tiles };
-    // setBoard(newBoard);
     return newTiles;
   }
-
-  // function mergeTo(tiles: TileProps[], tile: TileProps, to: TileProps) {
-  //   if (tile.value !== to.value) return;
-
-  //   tile.position = to.position;
-
-  //   // Delete tiles
-  //   const i1 = tiles.findIndex((t) => t.id === tile.id);
-  //   const i2 = tiles.findIndex((t) => t.id === to.id);
-
-  //   tiles.splice(i1, 1);
-  //   tiles.splice(i2, 1);
-
-  //   // Create new one with higher value
-  //   tiles.push({
-  //     id: getNextId(),
-  //     value: (to.value * 2) as ValueType,
-  //     position: [0, 0],
-  //   });
-  // }
 
   function mergeAll(tiles: TileProps[]): TileProps[] | false {
     const newTiles = [...tiles];
@@ -289,23 +247,80 @@ const GameProvider: FC = ({ children }) => {
     return true;
   }
 
-  const moveDown = () => {
+  function moveAll(direction: [number, number]) {
     let { tiles } = { ...board };
     let moved = false;
-    for (let x = 0; x < 4; x++) {
-      for (let y = 0; y < 4; y++) {
-        const tile = tiles.find(
-          (t) => t.position[0] === x && t.position[1] === y
-        );
-        if (!tile) continue;
 
-        const result = move(tiles, tile, [0, -1]);
-        if (!result) continue;
+    if (direction[0] !== 0) {
+      if (direction[0] > 0) {
+        // Move to right
+        for (let y = 0; y < 4; y++) {
+          for (let x = 3; x >= 0; x--) {
+            const tile = tiles.find(
+              (t) => t.position[0] === x && t.position[1] === y
+            );
+            if (!tile) continue;
 
-        moved = true;
-        tiles = result;
+            const result = move(tiles, tile, direction);
+            if (!result) continue;
+
+            moved = true;
+            tiles = result;
+          }
+        }
+      } else {
+        // Move to left
+        for (let y = 0; y < 4; y++) {
+          for (let x = 0; x < 4; x++) {
+            const tile = tiles.find(
+              (t) => t.position[0] === x && t.position[1] === y
+            );
+            if (!tile) continue;
+
+            const result = move(tiles, tile, direction);
+            if (!result) continue;
+
+            moved = true;
+            tiles = result;
+          }
+        }
+      }
+    } else {
+      if (direction[1] > 0) {
+        // Move to top
+        for (let x = 0; x < 4; x++) {
+          for (let y = 0; y < 4; y++) {
+            const tile = tiles.find(
+              (t) => t.position[0] === x && t.position[1] === y
+            );
+            if (!tile) continue;
+
+            const result = move(tiles, tile, direction);
+            if (!result) continue;
+
+            moved = true;
+            tiles = result;
+          }
+        }
+      } else {
+        // Move to bottom
+        for (let x = 0; x < 4; x++) {
+          for (let y = 3; y >= 0; y--) {
+            const tile = tiles.find(
+              (t) => t.position[0] === x && t.position[1] === y
+            );
+            if (!tile) continue;
+
+            const result = move(tiles, tile, direction);
+            if (!result) continue;
+
+            moved = true;
+            tiles = result;
+          }
+        }
       }
     }
+
     if (!moved) return;
 
     const result = mergeAll(tiles);
@@ -313,228 +328,40 @@ const GameProvider: FC = ({ children }) => {
     // Check if lose
     const lost = checkIfLose(result ? result : tiles);
 
-    // Add new tile
-    if (lost) return;
+    if (lost) {
+      setGameOver(true);
+      return;
+    }
 
+    // Add new tile
     setBoard({ ...board, tiles });
 
     setTimeout(() => {
       const newTiles = addTile(result ? result : tiles);
       setBoard({ ...board, tiles: newTiles });
     }, moveDuration + 30);
+  }
+
+  const moveDown = () => {
+    moveAll([0, -1]);
   };
-  const moveUp = () => {};
-  const moveLeft = () => {};
-  const moveRight = () => {};
+  const moveUp = () => {
+    moveAll([0, 1]);
+  };
+  const moveLeft = () => {
+    moveAll([-1, 0]);
+  };
+  const moveRight = () => {
+    moveAll([1, 0]);
+  };
 
-  // const moveDown = () =>
-  //   move((tiles, moved, setMoved) => {
-  //     for (let x = 3; x >= 0; x--) {
-  //       // tiles in one column
-  //       let filteredTiles = tiles
-  //         .filter((tile) => tile.position[0] === x)
-  //         .sort((a, b) => b.position[1] - a.position[1]);
-
-  //       // check if any tile will move
-  //       filteredTiles.forEach((tile) => {
-  //         if (moved) return;
-  //         if (tile.position[1] >= 3) return;
-
-  //         // find if there is other tile on bottom
-  //         const found = filteredTiles.find(
-  //           (t) => tile.position[1] + 1 === t.position[1]
-  //         );
-
-  //         if (!found || found.value === tile.value) {
-  //           moved = true;
-  //           setMoved(moved);
-  //           return;
-  //         }
-  //       });
-
-  //       for (let y = 3; y >= 0; y--) {
-  //         const tile = filteredTiles.find((t) => t.position[1] === y);
-  //         if (!tile) continue;
-
-  //         let lastTileFound: TileProps | null = null;
-  //         for (let yc = 3; yc > tile.position[1]; yc--) {
-  //           const nextTile = filteredTiles.find((t) => t.position[1] === yc);
-
-  //           if (nextTile) {
-  //             lastTileFound = nextTile;
-  //             continue;
-  //           }
-
-  //           tile.position[1] = yc;
-  //         }
-
-  //         if (lastTileFound && tile.value === lastTileFound.value) {
-  //           mergeTiles(filteredTiles, tile, lastTileFound);
-
-  //           //setTimeout(() => {
-  //           if (lastTileFound) mergeTiles(tiles, tile, lastTileFound);
-  //           //}, 100);
-  //         }
-  //       }
-
-  //       // moving tiles from one column
-  //       // filteredTiles = filteredTiles.flatMap((tile) => {
-  //       //   let lastTileFound: TileProps | null = null;
-  //       //   for (let y = 3; y > tile.position[1]; y--) {
-  //       //     const nextTile = filteredTiles.find((t) => t.position[1] === y);
-
-  //       //     if (nextTile) {
-  //       //       lastTileFound = nextTile;
-  //       //       continue;
-  //       //     }
-
-  //       //     tile.position[1] = y;
-  //       //   }
-
-  //       //   if (lastTileFound && tile.value === lastTileFound.value) {
-  //       //     mergeTiles(filteredTiles, tile, lastTileFound);
-
-  //       //     //setTimeout(() => {
-  //       //     if (lastTileFound) mergeTiles(tiles, tile, lastTileFound);
-  //       //     //}, 100);
-  //       //     return [];
-  //       //   }
-
-  //       //   return [tile];
-  //       // });
-  //     }
-  //   });
-
-  // const moveLeft = () =>
-  //   move((tiles, moved, setMoved) => {
-  //     for (let y = 0; y < 4; y++) {
-  //       const filteredTiles = tiles
-  //         .filter((tile) => tile.position[1] === y)
-  //         .sort((a, b) => a.position[0] - b.position[0]);
-
-  //       filteredTiles.forEach((tile) => {
-  //         if (moved) return;
-  //         if (tile.position[0] <= 0) return;
-
-  //         // find if there is other tile on left
-  //         moved = !filteredTiles.find(
-  //           (t) => tile.position[0] - 1 === t.position[0]
-  //         );
-  //         setMoved(moved);
-  //       });
-
-  //       filteredTiles.map((tile) => {
-  //         for (let x = 0; x <= tile.position[0]; x++) {
-  //           const isTileThere = filteredTiles.find((t) => t.position[0] === x);
-
-  //           if (isTileThere) continue;
-
-  //           tile.position[0] = x;
-  //         }
-  //       });
-  //     }
-  //   });
-
-  // const moveRight = () =>
-  //   move((tiles, moved, setMoved) => {
-  //     for (let y = 3; y >= 0; y--) {
-  //       const filteredTiles = tiles
-  //         .filter((tile) => tile.position[1] === y)
-  //         .sort((a, b) => b.position[0] - a.position[0]);
-
-  //       filteredTiles.forEach((tile) => {
-  //         if (moved) return;
-  //         if (tile.position[0] >= 3) return;
-
-  //         // find if there is other tile on right
-  //         moved = !filteredTiles.find(
-  //           (t) => tile.position[0] + 1 === t.position[0]
-  //         );
-  //         setMoved(moved);
-  //       });
-
-  //       filteredTiles.map((tile) => {
-  //         for (let x = 3; x >= tile.position[0]; x--) {
-  //           const isTileThere = filteredTiles.find((t) => t.position[0] === x);
-
-  //           if (isTileThere) continue;
-
-  //           tile.position[0] = x;
-  //         }
-  //       });
-  //     }
-  //   });
-
-  // const moveLeft = () => {
-
-  //   let moved = false;
-  //   for (let y = 0; y < 4; y++) {
-  //     const filteredTiles = tiles
-  //       .filter((tile) => tile.position[1] === y)
-  //       .sort((a, b) => a.position[0] - b.position[0]);
-
-  //     filteredTiles.forEach((tile) => {
-  //       if (moved) return;
-  //       if (tile.position[0] <= 0) return;
-
-  //       // find if there is other tile on left
-  //       moved = !filteredTiles.find(
-  //         (t) => tile.position[0] - 1 === t.position[0]
-  //       );
-  //     });
-
-  //     filteredTiles.map((tile) => {
-  //       for (let x = 0; x <= tile.position[0]; x++) {
-  //         const isTileThere = filteredTiles.find((t) => t.position[0] === x);
-
-  //         if (isTileThere) continue;
-
-  //         tile.position[0] = x;
-  //       }
-  //     });
-  //   }
-
-  //   if (!moved) return;
-
-  //   addTile(board);
-  //   setBoard(newBoard);
-  // };
-
-  // const moveLeft = () =>
-  //   move((tiles, tile, x, y) => {
-  //     for (let i = 0; i < x; i++) {
-  //       if (
-  //         tiles.filter(tile => tile.position[1] === y).find((tile) => tile.position[0] === i && tile.position[1] === y)
-  //       )
-  //         continue;
-
-  //       tile.position[0] = i;
-  //       break;
-  //     }
-  //   });
-
-  // const moveRight = () =>
-  //   move((tiles, tile, x, y) => {
-  //     for (let i = 3; i > x; i--) {
-  //       if (
-  //         tiles.find((tile) => tile.position[0] === i && tile.position[1] === y)
-  //       )
-  //         continue;
-
-  //       tile.position[0] = i;
-  //       break;
-  //     }
-  //   });
   //#endregion
-
-  // useEffect(() => {
-  //   initBoard();
-  // }, []);
 
   return (
     <GameContext.Provider
       value={{
         board,
+        gameOver,
         getNextId,
         resetBoard,
         moveRight,
