@@ -3,12 +3,15 @@ import { StyleSheet, View } from "react-native";
 import AppButton from "../components/AppButton";
 import AppText from "../components/AppText";
 import Layout from "../components/Layout";
+import { useGame } from "../providers/GameProvider";
 
 interface Props {
   navigation: any;
 }
 
 const HomeScreen: FC<Props> = ({ navigation }) => {
+  const { board } = useGame();
+
   return (
     <Layout>
       <View style={styles.container}>
@@ -16,13 +19,15 @@ const HomeScreen: FC<Props> = ({ navigation }) => {
           2048
         </AppText>
         <View style={styles.buttons}>
-          <AppButton
-            title="Continue"
-            onPress={() => {
-              navigation.navigate("Game");
-            }}
-            style={styles.button}
-          />
+          {!!board.tiles.length && (
+            <AppButton
+              title="Continue"
+              onPress={() => {
+                navigation.navigate("Game");
+              }}
+              style={styles.button}
+            />
+          )}
           <AppButton
             title="New Game"
             onPress={() => {

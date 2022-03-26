@@ -22,7 +22,7 @@ interface ContextProps {
   moveDown: () => void;
 }
 
-export const moveDuration = 150;
+export const moveDuration = 120;
 
 const GameContext = createContext({} as ContextProps);
 
@@ -61,9 +61,12 @@ const GameProvider: FC = ({ children }) => {
 
       emptyPositions.splice(index, 1);
 
+      // 5% for 4 tile
+      const value: ValueType = Math.random() < 0.05 ? 4 : 2;
+
       newTiles.push({
         id: getNextId(),
-        value: 2,
+        value,
         position,
       });
     }
@@ -356,12 +359,15 @@ const GameProvider: FC = ({ children }) => {
       return;
     }
 
-    // Add new tile
-    setBoard({ ...board, tiles });
+    const newBoard = { ...board, tiles };
+    setBoard(newBoard);
+    AsyncStorage.setItem("state", JSON.stringify({ board: newBoard, score }));
 
     setTimeout(() => {
+      // Add new tile
       const newTiles = addTile(result ? result : tiles);
-      setBoard({ ...board, tiles: newTiles });
+      const newBoard = { ...board, tiles: newTiles };
+      setBoard(newBoard);
     }, moveDuration + 30);
   }
 
@@ -383,9 +389,16 @@ const GameProvider: FC = ({ children }) => {
   useEffect(() => {
     (async () => {
       const bs = await AsyncStorage.getItem("best-score");
-      if (!bs) return;
+      if (bs) {
+        setBestScore(parseInt(bs));
+      }
 
-      setBestScore(parseInt(bs));
+      const stateJson = await AsyncStorage.getItem("state");
+      if (stateJson) {
+        const { board, score } = JSON.parse(stateJson);
+        setBoard(board);
+        setScore(score);
+      }
     })();
   }, []);
 

@@ -24,8 +24,9 @@ const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
   }
 
   useEffect(() => {
-    Animated.spring(scaleAnim, {
+    Animated.timing(scaleAnim, {
       toValue: 1,
+      duration: moveDuration,
       useNativeDriver: false,
     }).start();
   }, []);
