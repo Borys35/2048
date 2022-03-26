@@ -49,6 +49,8 @@ const Board: FC<Props> = () => {
 const styles = StyleSheet.create({
   board: {
     backgroundColor: "rgb(224, 224, 224)",
+    width: "100%",
+    aspectRatio: 1,
   },
 });
 

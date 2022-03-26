@@ -1,9 +1,19 @@
-import { createContext, FC, useContext, useRef, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  createContext,
+  FC,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { BoardProps, TileProps, ValueType } from "../typings";
 
 interface ContextProps {
   board: BoardProps;
   gameOver: boolean;
+  score: number;
+  bestScore: number;
   getNextId: () => number;
   resetBoard: () => void;
   moveRight: () => void;
@@ -21,6 +31,8 @@ export const useGame = () => useContext(GameContext);
 const GameProvider: FC = ({ children }) => {
   const [board, setBoard] = useState<BoardProps>({ tiles: [] });
   const [gameOver, setGameOver] = useState(false);
+  const [score, setScore] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
   const nextIdRef = useRef<number>(0);
 
   function getNextId() {
@@ -61,6 +73,7 @@ const GameProvider: FC = ({ children }) => {
 
   function resetBoard() {
     setGameOver(false);
+    setScore(0);
     const tiles = addTile([], 2);
     setBoard({ tiles });
   }
@@ -177,13 +190,14 @@ const GameProvider: FC = ({ children }) => {
   function mergeAll(tiles: TileProps[]): TileProps[] | false {
     const newTiles = [...tiles];
     let merged = false;
+    let scoreToAdd = 0;
     for (let y = 0; y < 4; y++) {
       for (let x = 0; x < 4; x++) {
         const filteredTiles = newTiles.filter(
           (t) => t.position[0] === x && t.position[1] === y
         );
 
-        console.log("merged", filteredTiles);
+        // console.log("merged", filteredTiles);
         if (filteredTiles.length < 2) continue;
         if (filteredTiles[0].value !== filteredTiles[1].value)
           throw new Error("It's not legal");
@@ -201,15 +215,24 @@ const GameProvider: FC = ({ children }) => {
         );
 
         // Create one tile with higher value
+        const newValue = (filteredTiles[0].value * 2) as ValueType;
+        scoreToAdd += newValue;
         newTiles.push({
           ...filteredTiles[0],
           id: getNextId(),
-          value: (filteredTiles[0].value * 2) as ValueType,
+          value: newValue,
         });
       }
     }
 
     if (!merged) return false;
+
+    const newScore = score + scoreToAdd;
+    setScore(newScore);
+    if (newScore > bestScore) {
+      setBestScore(newScore);
+      AsyncStorage.setItem("best-score", newScore.toString());
+    }
     return newTiles;
   }
 
@@ -357,11 +380,22 @@ const GameProvider: FC = ({ children }) => {
 
   //#endregion
 
+  useEffect(() => {
+    (async () => {
+      const bs = await AsyncStorage.getItem("best-score");
+      if (!bs) return;
+
+      setBestScore(parseInt(bs));
+    })();
+  }, []);
+
   return (
     <GameContext.Provider
       value={{
         board,
         gameOver,
+        score,
+        bestScore,
         getNextId,
         resetBoard,
         moveRight,
