@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { BoardProps, TileProps, ValueType } from "../typings";
+import { BoardProps, TileProps, TileSetProps, ValueType } from "../typings";
 
 interface ContextProps {
   board: BoardProps;
@@ -15,7 +15,9 @@ interface ContextProps {
   score: number;
   bestScore: number;
   hue: number;
+  tileSetId: number;
   setHue: (arg: number) => void;
+  setTileSetId: (arg: number) => void;
   getNextId: () => number;
   resetBoard: () => void;
   moveRight: () => void;
@@ -25,6 +27,45 @@ interface ContextProps {
 }
 
 export const moveDuration = 120;
+export const tileSets: TileSetProps[] = [
+  { id: 1, label: "Default", chars: [] },
+  {
+    id: 2,
+    label: "Fruits 🍏",
+    chars: [
+      "🍏",
+      "🍐",
+      "🍈",
+      "🍎",
+      "🍓",
+      "🍒",
+      "🍊",
+      "🍉",
+      "🍑",
+      "🍍",
+      "🍌",
+      "🍋",
+    ],
+  },
+  {
+    id: 3,
+    label: "Animals 🐀",
+    chars: [
+      "🐀",
+      "🐌",
+      "🐇",
+      "🐍",
+      "🐓",
+      "🐎",
+      "🐕",
+      "🐟",
+      "🐢",
+      "🐋",
+      "🐖",
+      "🐉",
+    ],
+  },
+];
 
 const GameContext = createContext({} as ContextProps);
 
@@ -36,6 +77,7 @@ const GameProvider: FC = ({ children }) => {
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
   const [hue, setHue] = useState(20);
+  const [tileSetId, setTileSetId] = useState(1);
   const nextIdRef = useRef<number>(0);
 
   function getNextId() {
@@ -413,7 +455,9 @@ const GameProvider: FC = ({ children }) => {
         score,
         bestScore,
         hue,
+        tileSetId,
         setHue,
+        setTileSetId,
         getNextId,
         resetBoard,
         moveRight,

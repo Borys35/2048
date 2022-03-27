@@ -21,3 +21,9 @@ export interface TileProps {
 export interface BoardProps {
   tiles: TileProps[];
 }
+
+export interface TileSetProps {
+  id: number;
+  label: string;
+  chars: string[];
+}
