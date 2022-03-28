@@ -24,12 +24,14 @@ const GameScreen: FC<Props> = ({ route, navigation }) => {
   return (
     <Layout>
       <View style={styles.container}>
-        <AppText style={styles.text}>
-          Best score: <AppText fontWeight="bold">{bestScore}</AppText>
-        </AppText>
-        <AppText style={styles.text}>
-          Score: <AppText fontWeight="bold">{score}</AppText>
-        </AppText>
+        <View style={styles.textContainer}>
+          <AppText style={styles.text}>
+            Best score: <AppText fontWeight="bold">{bestScore}</AppText>
+          </AppText>
+          <AppText style={styles.text}>
+            Score: <AppText fontWeight="bold">{score}</AppText>
+          </AppText>
+        </View>
         <BoardLogic>
           <Board />
         </BoardLogic>
@@ -46,10 +48,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  textContainer: {
+    marginBottom: 32,
+    alignSelf: "stretch",
+    alignItems: "flex-end",
+  },
   text: {
-    alignSelf: "flex-end",
     fontSize: 24,
-    marginBottom: 4,
   },
 });
 

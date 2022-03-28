@@ -29,6 +29,7 @@ export default function App() {
           initialRouteName="Home"
           screenOptions={{
             headerTitleStyle: { fontFamily: "Oswald_700Bold" },
+            headerShadowVisible: false,
           }}
         >
           <Stack.Screen name="Home" component={HomeScreen} />

@@ -65,7 +65,13 @@ const Tile: FC<Props> = ({ value, top, left, style, ...props }) => {
       {value > 0 && (
         <AppText
           fontWeight="bold"
-          style={[styles.text, { color: dividedCount >= 8 ? "#fff" : "#000" }]}
+          style={[
+            styles.text,
+            {
+              color: dividedCount >= 8 ? "#fff" : "#000",
+              fontSize: value >= 1000 ? 18 : 24,
+            },
+          ]}
         >
           {displayValue()}
         </AppText>
@@ -81,9 +87,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     margin: 8,
+    borderRadius: 8,
   },
   text: {
-    fontSize: 24,
     paddingBottom: 4,
   },
 });

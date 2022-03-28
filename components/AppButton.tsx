@@ -18,11 +18,13 @@ const AppButton: FC<Props> = ({ title, style, ...props }) => {
 
 const styles = StyleSheet.create({
   button: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 32,
     paddingVertical: 12,
     backgroundColor: "#fff",
     alignItems: "center",
     elevation: 4,
+    borderRadius: 8,
+    borderWidth: 2,
   },
   text: {
     fontSize: 20,

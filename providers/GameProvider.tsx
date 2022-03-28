@@ -123,7 +123,9 @@ const GameProvider: FC = ({ children }) => {
     setGameOver(false);
     setScore(0);
     const tiles = addTile([], 2);
-    setBoard({ tiles });
+    setBoard({
+      tiles,
+    });
   }
 
   //#region movement
@@ -245,7 +247,6 @@ const GameProvider: FC = ({ children }) => {
           (t) => t.position[0] === x && t.position[1] === y
         );
 
-        // console.log("merged", filteredTiles);
         if (filteredTiles.length < 2) continue;
         if (filteredTiles[0].value !== filteredTiles[1].value)
           throw new Error("It's not legal");
@@ -396,14 +397,6 @@ const GameProvider: FC = ({ children }) => {
 
     const result = mergeAll(tiles);
 
-    // Check if lose
-    const lost = checkIfLose(result ? result : tiles);
-
-    if (lost) {
-      setGameOver(true);
-      return;
-    }
-
     const newBoard = { ...board, tiles };
     setBoard(newBoard);
     AsyncStorage.setItem("state", JSON.stringify({ board: newBoard, score }));
@@ -411,6 +404,12 @@ const GameProvider: FC = ({ children }) => {
     setTimeout(() => {
       // Add new tile
       const newTiles = addTile(result ? result : tiles);
+
+      // Check if lose
+      if (checkIfLose(newTiles)) {
+        setGameOver(true);
+      }
+
       const newBoard = { ...board, tiles: newTiles };
       setBoard(newBoard);
     }, moveDuration + 30);

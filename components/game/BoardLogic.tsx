@@ -23,8 +23,6 @@ const BoardLogic: FC = ({ children }) => {
         const xDiff = pageX - prevLocation[0];
         const yDiff = pageY - prevLocation[1];
 
-        // console.log("x", xDiff, "y", yDiff);
-
         if (Math.abs(xDiff) > Math.abs(yDiff)) {
           if (Math.abs(xDiff) < threshold) return;
           if (xDiff > 0) {

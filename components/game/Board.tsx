@@ -9,6 +9,7 @@ interface Props {}
 const Board: FC<Props> = () => {
   const {
     board: { tiles },
+    hue,
   } = useGame();
 
   const distSize = 64;
@@ -32,7 +33,17 @@ const Board: FC<Props> = () => {
   }
 
   return (
-    <View style={[styles.board, { width: 4 * distSize, height: 4 * distSize }]}>
+    <View
+      style={[
+        styles.board,
+        {
+          width: 4 * distSize + 4,
+          height: 4 * distSize + 4,
+          transform: [{ scale: 1.1 }],
+          backgroundColor: `hsl(${hue}, 90%, 90%)`,
+        },
+      ]}
+    >
       {generateEmptyTiles()}
       {tiles.map(({ position, value, id }) => (
         <Tile
@@ -48,9 +59,10 @@ const Board: FC<Props> = () => {
 
 const styles = StyleSheet.create({
   board: {
-    backgroundColor: "rgb(224, 224, 224)",
     width: "100%",
     aspectRatio: 1,
+    borderRadius: 8,
+    borderWidth: 2,
   },
 });
 
